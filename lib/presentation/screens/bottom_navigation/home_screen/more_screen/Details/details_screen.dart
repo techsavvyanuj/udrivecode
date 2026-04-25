@@ -836,9 +836,17 @@ class _DetailsScreenState extends State<DetailsScreen>
                                         ),
                                       ),
                                       onTap: () {
+                                        final movieTitle = movieAllDetails
+                                                .movieDetailsList.isNotEmpty
+                                            ? (movieAllDetails
+                                                    .movieDetailsList[0].title
+                                                    ?.trim() ??
+                                                'this movie')
+                                            : 'this movie';
+
                                         SharePlus.instance.share(ShareParams(
                                           text:
-                                              'https://play.google.com/store/apps/details?id=com.mova.android',
+                                              'Watch "$movieTitle" on Mova\nhttps://play.google.com/store/apps/details?id=com.webtimemovieocean.app',
                                         ));
                                       },
                                     ),
