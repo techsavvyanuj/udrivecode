@@ -87,6 +87,7 @@ const Movie = (props) => {
 
   const updateOpen = (data) => {
     sessionStorage.setItem("trailerId", data?._id);
+    sessionStorage.setItem("updateMovieData", JSON.stringify(data));
     sessionStorage.setItem("updateMovieData1", JSON.stringify(data));
     history.push({ pathname: "/admin/movie/movie_form", state: data });
   };
@@ -122,6 +123,7 @@ const Movie = (props) => {
 
   const insertOpen = () => {
     sessionStorage.removeItem("updateMovieData");
+    sessionStorage.removeItem("updateMovieData1");
     history.push("/admin/movie/movie_form");
   };
 
@@ -142,6 +144,7 @@ const Movie = (props) => {
   };
 
   useEffect(() => {
+    sessionStorage.removeItem("updateMovieData");
     sessionStorage.removeItem("updateMovieData1");
   }, []);
 

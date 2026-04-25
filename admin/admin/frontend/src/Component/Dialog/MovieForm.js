@@ -75,7 +75,11 @@ const MovieDialog = (props) => {
   //call teamMember and set teamMember
   const { teamMember } = useSelector((state) => state.teamMember);
 
-  const dialogData = JSON.parse(sessionStorage.getItem("updateMovieData"));
+  const dialogData = JSON.parse(
+    sessionStorage.getItem("updateMovieData") ||
+      sessionStorage.getItem("updateMovieData1") ||
+      "null",
+  );
 
   const editor = useRef(null);
   const dispatch = useDispatch();
@@ -1015,7 +1019,11 @@ const MovieDialog = (props) => {
         //   dispatch({ type: FILE_UPLOAD_SUCCESS, payload: objData });
         // }
 
-        props.createManual(objData);
+        if (dialogData && movieId) {
+          props.updateMovie(objData, movieId);
+        } else {
+          props.createManual(objData);
+        }
       }
 
       setTimeout(() => {
@@ -1056,6 +1064,7 @@ const MovieDialog = (props) => {
   //Close Dialog
   const handleClose = () => {
     sessionStorage.removeItem("updateMovieData");
+    sessionStorage.removeItem("updateMovieData1");
 
     if (dialogData) {
       history.goBack();
