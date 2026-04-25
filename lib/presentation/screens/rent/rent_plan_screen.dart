@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:webtime_movie_ocean/buinesslogic/apiservice/app_url.dart';
 import 'package:webtime_movie_ocean/buinesslogic/apiservice/complet_movie_data/complete_movie_data_modal.dart';
 import 'package:webtime_movie_ocean/presentation/utils/app_colors.dart';
 import 'package:webtime_movie_ocean/presentation/utils/app_var.dart';
@@ -250,11 +254,19 @@ class _RentPlanScreenState extends State<RentPlanScreen> {
   }
 
   Future<void> _finalizeRental(Map<String, dynamic> opt) async {
-    // Store rental locally
+    final purchaseResult = await _createServerRental(opt);
+    if (!purchaseResult['status']) {
+      Fluttertoast.showToast(
+        msg: purchaseResult['message'] ?? 'Unable to activate rental.',
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+      return;
+    }
+
+    // Store rental locally from server expiry
     final prefs = await SharedPreferences.getInstance();
-    final durationHours = opt['duration'] as num;
-    final expiresAtMs = DateTime.now().millisecondsSinceEpoch +
-        durationHours.toInt() * 60 * 60 * 1000;
+    final expiresAtMs = purchaseResult['expiresAtMs'] as int;
 
     await prefs.setInt('rental_${widget.movieId}_expires', expiresAtMs);
     await prefs.setString(
@@ -264,6 +276,60 @@ class _RentPlanScreenState extends State<RentPlanScreen> {
 
     // Show success popup
     await _showPaymentSuccessDialog(opt);
+  }
+
+  Future<Map<String, dynamic>> _createServerRental(
+    Map<String, dynamic> opt,
+  ) async {
+    try {
+      if (userId.isEmpty) {
+        return {
+          'status': false,
+          'message': 'Please login again before renting.',
+        };
+      }
+
+      final response = await http.post(
+        Uri.parse(AppUrls.rentalPurchase),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'key': AppUrls.SECRET_KEY,
+        },
+        body: jsonEncode({
+          'userId': userId,
+          'movieId': widget.movieId,
+          'durationHours': opt['duration'],
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == true) {
+        final expiresAt = DateTime.tryParse(
+          (data['rental']?['expiresAt'] ?? '').toString(),
+        );
+        if (expiresAt == null) {
+          return {
+            'status': false,
+            'message': 'Rental created but expiry parsing failed.',
+          };
+        }
+
+        return {
+          'status': true,
+          'expiresAtMs': expiresAt.millisecondsSinceEpoch,
+        };
+      }
+
+      return {
+        'status': false,
+        'message': data['message']?.toString() ?? 'Rental purchase failed.',
+      };
+    } catch (_) {
+      return {
+        'status': false,
+        'message': 'Network error while activating rental.',
+      };
+    }
   }
 
   @override

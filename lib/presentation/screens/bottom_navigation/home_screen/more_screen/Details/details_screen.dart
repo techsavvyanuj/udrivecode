@@ -15,8 +15,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 import 'package:webtime_movie_ocean/googleAd/google_mobile_ads_stub.dart';
 import 'package:webtime_movie_ocean/buinesslogic/apiservice/addViewToMovie/add_view_to_movie_api_controller.dart';
+import 'package:webtime_movie_ocean/buinesslogic/apiservice/app_url.dart';
 import 'package:webtime_movie_ocean/buinesslogic/apiservice/createComments_api/createComments_api_controller.dart';
 import 'package:webtime_movie_ocean/buinesslogic/apiservice/createFavoriteMovie_api/create_favourite_movie_api_controller.dart';
 import 'package:webtime_movie_ocean/buinesslogic/apiservice/rating_api/create_rating_api/create_rating_api_controller.dart';
@@ -95,6 +97,9 @@ class _DetailsScreenState extends State<DetailsScreen>
   CommentListController allCommentsList = Get.put(CommentListController());
   bool isButtonDisabled = true;
   bool hasActiveRental = false;
+  DateTime? _rentalExpiresAt;
+  Duration _rentalRemaining = Duration.zero;
+  Timer? _rentalTimer;
 
   void validateField(text) {
     if (commentController.text.isEmpty ||
@@ -188,18 +193,108 @@ class _DetailsScreenState extends State<DetailsScreen>
   @override
   void dispose() {
     _interstitialAd?.dispose();
+    _rentalTimer?.cancel();
     _tabController.dispose();
 
     super.dispose();
   }
 
   Future<void> _loadRentalAccess() async {
+    if (userId.isEmpty) {
+      await _loadRentalAccessFromLocal();
+      return;
+    }
+
+    try {
+      final uri = Uri.parse(
+        '${AppUrls.rentalAccess}?userId=$userId&movieId=${widget.movieId}',
+      );
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+          'key': AppUrls.SECRET_KEY,
+        },
+      );
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == true) {
+        final hasAccess = data['hasAccess'] == true;
+        final expiresAtRaw = (data['rental']?['expiresAt'] ?? '').toString();
+        final parsedExpiry = DateTime.tryParse(expiresAtRaw);
+
+        setState(() {
+          hasActiveRental = hasAccess;
+          _rentalExpiresAt = parsedExpiry;
+          _rentalRemaining = parsedExpiry != null
+              ? parsedExpiry.difference(DateTime.now())
+              : Duration.zero;
+        });
+
+        if (parsedExpiry != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setInt(
+            'rental_${widget.movieId}_expires',
+            parsedExpiry.millisecondsSinceEpoch,
+          );
+        }
+
+        _startRentalTimer();
+        return;
+      }
+    } catch (_) {}
+
+    await _loadRentalAccessFromLocal();
+  }
+
+  Future<void> _loadRentalAccessFromLocal() async {
     final prefs = await SharedPreferences.getInstance();
     final expiresMs = prefs.getInt('rental_${widget.movieId}_expires') ?? 0;
     final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final expiry =
+        expiresMs > 0 ? DateTime.fromMillisecondsSinceEpoch(expiresMs) : null;
+
     setState(() {
       hasActiveRental = expiresMs > nowMs;
+      _rentalExpiresAt = expiry;
+      _rentalRemaining = expiry != null
+          ? expiry.difference(DateTime.now())
+          : Duration.zero;
     });
+
+    _startRentalTimer();
+  }
+
+  void _startRentalTimer() {
+    _rentalTimer?.cancel();
+
+    if (_rentalExpiresAt == null) return;
+
+    _rentalTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final remaining = _rentalExpiresAt!.difference(DateTime.now());
+      if (!mounted) return;
+
+      if (remaining <= Duration.zero) {
+        setState(() {
+          _rentalRemaining = Duration.zero;
+          hasActiveRental = false;
+        });
+        _rentalTimer?.cancel();
+      } else {
+        setState(() {
+          _rentalRemaining = remaining;
+        });
+      }
+    });
+  }
+
+  String _formatRentalRemaining(Duration d) {
+    if (d <= Duration.zero) return '00:00:00';
+    final hours = d.inHours.toString().padLeft(2, '0');
+    final minutes = (d.inMinutes % 60).toString().padLeft(2, '0');
+    final seconds = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return '$hours:$minutes:$seconds';
   }
 
   Widget rentButton() {
@@ -964,6 +1059,50 @@ class _DetailsScreenState extends State<DetailsScreen>
                                       ),
                                     )
                                   : const SizedBox(),
+
+                              if (hasActiveRental &&
+                                  _rentalRemaining > Duration.zero)
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    left: SizeConfig.blockSizeHorizontal * 4,
+                                    right: SizeConfig.blockSizeHorizontal * 4,
+                                    top: 10,
+                                  ),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 10,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withOpacity(0.12),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: Colors.green.withOpacity(0.35),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.access_time,
+                                          color: Colors.green,
+                                          size: 18,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            'Rental ends in ${_formatRentalRemaining(_rentalRemaining)}',
+                                            style: GoogleFonts.outfit(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.green.shade800,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
 
                               /// Movie Trailers,more Like this and Comments TabBar
                             ],
@@ -1826,7 +1965,8 @@ class _DetailsScreenState extends State<DetailsScreen>
   /// Play and Watch Movie methode ///
   InkWell playButton(AddViewToMovieProvider addViewToMovie) {
     return InkWell(
-      onTap: () {
+      onTap: () async {
+        await _loadRentalAccess();
         addViewToMovie.addViewToMovie(
           movieAllDetails.movieDetailsList[0].id.toString(),
         );

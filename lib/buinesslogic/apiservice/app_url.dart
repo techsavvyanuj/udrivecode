@@ -53,5 +53,7 @@ class AppUrls {
   static String fetchReels = "/shortVideo/fetchShortVideos";
   static String reelsLikeDislike = "/like/likeOrDislikeOfShortVideo";
   static String videoShare = "/shortVideo/incrementShortVideoShareCount";
+    static String rentalPurchase = "$BASE_URL/rental/purchase";
+    static String rentalAccess = "$BASE_URL/rental/access";
   static const userLocationURL = "http://ipss-api.com/json";
 }
