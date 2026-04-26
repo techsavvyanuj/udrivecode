@@ -1,8 +1,18 @@
 {
+  "version": 2,
   "rewrites": [
     {
       "source": "/api/:path*",
       "destination": "http://66.63.168.107/:path*"
+    }
+  ],
+  "routes": [
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
