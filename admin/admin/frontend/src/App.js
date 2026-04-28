@@ -1,4 +1,4 @@
-import React, { useEffect, lazy, Suspense, useState } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 
 //react-router-dom
 import {
@@ -56,7 +56,6 @@ import './Component/assets/js/chart-custom.js';
 import { SET_ADMIN, UNSET_ADMIN } from './store/Admin/admin.type';
 
 import { IdleTimeoutManager } from 'idle-timer-manager';
-import Registration from './Pages/Registration';
 import axios from 'axios';
 import Loader from '../src/Pages/Loader';
 import jwtDecode from 'jwt-decode';
@@ -68,27 +67,14 @@ const ForgotPassword = lazy(() => import('./Pages/ForgotPassword'));
 const ChangePassword = lazy(() => import('./Pages/ChangePassword'));
 const Admin = lazy(() => import('./Pages/Admin'));
 const AuthRouter = lazy(() => import('./util/AuthRoute.js'));
+const Registration = lazy(() => import('./Pages/Registration'));
 
 function App() {
   const dispatch = useDispatch();
   const { isAuth } = useSelector((state) => state.admin);
   const token = sessionStorage.getItem('token');
   const key = sessionStorage.getItem('key');
-  const [login, setLogin] = useState(null);
   const history = useHistory();
-
-  useEffect(() => {
-    axios
-      .get("/authorizeLogin")
-      .then((res) => {
-        if (res.data.status) {
-          setLogin(res.data.login);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, []);
 
   useEffect(() => {
     if (!token && !key) return;
@@ -102,12 +88,9 @@ function App() {
       <div className="wrapper">
         <Suspense fallback={<div></div>}>
           <Switch>
-            <AuthRouter
-              exact
-              path="/"
-              component={login ? Login : Registration}
-            />
-            <AuthRouter exact path="/login" component={login ? Login : Registration} />
+            <AuthRouter exact path="/" component={Login} />
+            <AuthRouter exact path="/login" component={Login} />
+            <AuthRouter exact path="/signup" component={Registration} />
             <AuthRouter
               exact
               path="/forgotPassword"

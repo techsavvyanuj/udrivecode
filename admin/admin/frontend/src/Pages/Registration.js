@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { connect } from "react-redux";
+import { NavLink } from "react-router-dom";
 import { signupAdmin } from "../store/Admin/admin.action";
 //login form logo
 import logo from "../Component/assets/images/logo.png";
@@ -238,6 +239,9 @@ const Registration = (props) => {
                 >
                   Sign Up
                 </button>
+                <NavLink to="/login" className="fs-5 fw-bold text-center">
+                  Already have an account? Login
+                </NavLink>
               </div>
             </div>
           </div>

@@ -172,6 +172,11 @@ const Login = (props) => {
                   Forgot password?
                 </NavLink>
               </div>
+              <div className="w-100 mt-2">
+                <NavLink to="/signup" className="fs-5 fw-bold">
+                  Don’t have an account? Sign up
+                </NavLink>
+              </div>
               <div className="d-flex flex-column justify-content-center w-100 gap-3 mt-4">
                 <button
                   className={"btn btn-sm login-btn  w-100 py-2 mb-2 fw-medium"}
