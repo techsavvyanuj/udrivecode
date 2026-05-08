@@ -44,3 +44,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+# Added by code-review-graph
+.code-review-graph/
+admin/admin/frontend.zip

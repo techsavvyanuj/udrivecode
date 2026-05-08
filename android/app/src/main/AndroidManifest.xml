@@ -15,7 +15,7 @@
     <uses-permission android:name="com.android.vending.BILLING" />
 
    <application
-        android:label="WebTime Movie Ocean"
+        android:label="Movie Ocean"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
         android:usesCleartextTraffic="true"

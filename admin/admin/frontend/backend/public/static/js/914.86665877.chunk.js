@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunkmovie_flutter_frontend=self.webpackChunkmovie_flutter_frontend||[]).push([[914],{4914:(t,e,n)=>{n.r(e),n.d(e,{default:()=>h});var s=n(9379),r=n(45),u=(n(5043),n(6841)),o=n(2166),i=n(579);const d=["component","isAuth"],h=(0,o.Ng)((t=>({isAuth:t.admin.isAuth})))((t=>{let{component:e,isAuth:n}=t,o=(0,r.A)(t,d);return(0,i.jsx)(u.qh,(0,s.A)((0,s.A)({},o),{},{render:t=>!0===n?(0,i.jsx)(u.rd,{to:"/admin"}):(0,i.jsx)(e,(0,s.A)({},t))}))}))}}]);
+//# sourceMappingURL=914.86665877.chunk.js.map

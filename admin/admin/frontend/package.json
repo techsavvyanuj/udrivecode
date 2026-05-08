@@ -2,7 +2,7 @@
   "name": "movie-flutter-frontend",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://66.63.168.107:5001",
+  "proxy": "http://66.63.168.107:5000",
   "dependencies": {
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.0",
