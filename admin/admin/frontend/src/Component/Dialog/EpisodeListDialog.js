@@ -79,16 +79,39 @@ const EpisodeListDialogue = ({ page, size }) => {
   }, [dialogData]);
 
   const handleSubmit = async () => {
+    // Validate inputs
+    if (videoUrlType === 1) {
+      if (!videoPath || !videoPath.trim()) {
+        setError((prev) => ({ ...prev, video: "Please enter a valid video link!" }));
+        return;
+      }
+      if (!videoDuration) {
+        setError((prev) => ({ ...prev, video: "Could not fetch duration. Please ensure the video link is correct and accessible." }));
+        return;
+      }
+    } else {
+      if (!fileData && !dialogData?._id) {
+        setError((prev) => ({ ...prev, video: "Please select a valid video file!" }));
+        return;
+      }
+    }
+
     dispatch({ type: OPEN_LOADER });
     try {
       const uploadResult = await handleVideoUpload();
+
+      if (videoUrlType === 2 && !uploadResult) {
+        // Upload failed
+        dispatch({ type: CLOSE_LOADER });
+        return;
+      }
 
       const payload = {
         videoUrlType,
         videoUrl: videoUrlType === 1 ? videoPath : uploadResult?.videoUrl,
         videoImage:
-          videoUrlType === 1 ? previewImageUrl : uploadResult?.videoImage,
-        duration: videoDuration,
+          videoUrlType === 1 ? (previewImageUrl || "https://dummyimage.com/640x360/000/fff&text=Short+Video") : uploadResult?.videoImage,
+        duration: videoDuration || 0,
       };
 
       if (!dialogData?._id) {
@@ -100,11 +123,7 @@ const EpisodeListDialogue = ({ page, size }) => {
       if (dialogData?._id) {
         await dispatch(updateEpisode(payload, dialogData._id));
       } else {
-        const response = await dispatch(insertEpisode(payload)).unwrap();
-
-        if (response?.status) {
-          Toast("success", "Short video added successfully.");
-        }
+        await dispatch(insertEpisode(payload));
       }
     } catch (error) {
       console.error("Error submitting episode:", error);
@@ -257,6 +276,10 @@ const EpisodeListDialogue = ({ page, size }) => {
   };
 
   const handleVideoUpload = async () => {
+    if (videoUrlType === 1) {
+      return null;
+    }
+
     if (!fileData && dialogData?.videoUrl && dialogData?.videoImage) {
       return {
         videoUrl: dialogData.videoUrl,
@@ -324,6 +347,25 @@ const EpisodeListDialogue = ({ page, size }) => {
   const generateThumbnailBlob = async (file) => {
     return new Promise((resolve) => {
       const video = document.createElement("video");
+      const objectURL = URL.createObjectURL(file);
+
+      const cleanUp = () => {
+        try {
+          URL.revokeObjectURL(objectURL);
+        } catch (e) {
+          console.error("Revoke error:", e);
+        }
+        video.onloadedmetadata = null;
+        video.onseeked = null;
+        video.onerror = null;
+      };
+
+      const timeoutId = setTimeout(() => {
+        console.warn("Thumbnail generation timed out.");
+        cleanUp();
+        resolve(null);
+      }, 5000);
+
       video.preload = "metadata";
 
       video.onloadedmetadata = () => {
@@ -331,24 +373,31 @@ const EpisodeListDialogue = ({ page, size }) => {
       };
 
       video.onseeked = async () => {
+        clearTimeout(timeoutId);
         const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 360;
         const ctx = canvas.getContext("2d");
-        ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        // Convert the canvas to blob
-        canvas.toBlob((blob) => {
-          resolve(blob);
-        }, "image/jpeg");
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            cleanUp();
+            resolve(blob);
+          }, "image/jpeg");
+        } else {
+          cleanUp();
+          resolve(null);
+        }
       };
 
-      const objectURL = URL.createObjectURL(file);
+      video.onerror = (e) => {
+        console.error("Video loading error in generateThumbnailBlob:", e);
+        clearTimeout(timeoutId);
+        cleanUp();
+        resolve(null);
+      };
+
       video.src = objectURL;
-
-      return () => {
-        URL.revokeObjectURL(objectURL);
-      };
     });
   };
 
