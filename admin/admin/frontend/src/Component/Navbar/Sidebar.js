@@ -14,7 +14,7 @@ import { useDispatch } from 'react-redux';
 import { UNSET_ADMIN } from '../../store/Admin/admin.type';
 
 // icon
-import { IconBadgeAd, IconBasketDollar, IconBrandNetflix, IconClipboardData, IconConfetti, IconDeviceTvOld, IconHelp, IconHistory, IconHome2, IconLogout, IconMovie, IconPhotoVideo, IconSettings, IconTicket, IconTimezone, IconUser, IconUserCircle } from '@tabler/icons-react';
+import { IconBadgeAd, IconBasketDollar, IconBrandNetflix, IconClipboardData, IconDeviceTvOld, IconHistory, IconHome2, IconLogout, IconMovie, IconPhotoVideo, IconSettings, IconTimezone, IconUser, IconUserCircle } from '@tabler/icons-react';
 import { projectName } from '../../util/config';
 
 const useStyles = makeStyles(() => ({
@@ -221,13 +221,6 @@ const Sidebar = () => {
                 </li>
                 <div className="custom-sidebar-label">Content & Metadata</div>
                 <li>
-                  <NavLink to="/admin/content" className={`${classes.navLink}`} onClick={closeSidebar}
-                  >
-                    <IconConfetti />
-                    <span className="pl-2">Content</span>
-                  </NavLink>
-                </li>
-                <li>
                   <NavLink to="/admin/region" className={`${classes.navLink}`} onClick={closeSidebar}
                   >
                     <IconTimezone />
@@ -263,41 +256,6 @@ const Sidebar = () => {
                   >
                     <IconHistory />
                     <span className="pl-2">Purchase Plan History</span>
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/admin/advertisement"
-                    className={`${classes.navLink}`}
-                    onClick={closeSidebar}
-
-                  >
-                    <IconBadgeAd />
-                    <span className="pl-2">Advertisement</span>
-                  </NavLink>
-                </li>
-                <div className="custom-sidebar-label">Support</div>
-
-                <li>
-                  <NavLink
-                    to="/admin/raisedTicket"
-                    className={`${classes.navLink}`}
-                    onClick={closeSidebar}
-
-                  >
-                    <IconTicket />
-                    <span className="pl-2">Raised Tickets</span>
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    to="/admin/help_center/faq"
-                    className={`${classes.navLink}`}
-                    onClick={closeSidebar}
-
-                  >
-                    <IconHelp />
-                    <span className="pl-2">Help Center</span>
                   </NavLink>
                 </li>
                 <div className="custom-sidebar-label">Setting</div>

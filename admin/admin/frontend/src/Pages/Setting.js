@@ -314,17 +314,13 @@ const Setting = (props) => {
                           <form>
                             <div class="mb-3 form-group">
                               <label for="publishableKey" class="form-label">
-                                Privacy Policy Link
+                                Policies & Terms Link
                               </label>
                               <input
                                 type="text"
                                 class="form-control"
                                 id="policyLink"
-                                placeholder={
-
-                                  `EnterPrivacy policy link`
-
-                                }
+                                placeholder={`Enter Policies & Terms link`}
                                 value={privacyPolicyLink}
                                 onChange={(e) =>
                                   setPrivacyPolicyLink(e.target.value)
@@ -333,15 +329,14 @@ const Setting = (props) => {
                             </div>
                             <div class="mb-3 form-group">
                               <label for="secretKey" class="form-label">
-                                Terms And Codition Link
+                                Contact Us Link
                               </label>
                               <input
                                 type="text"
                                 class="form-control"
                                 id="policyText"
                                 value={termConditionLink}
-                                placeholder={`Enter Term And Codition link`
-                                }
+                                placeholder={`Enter Contact Us link`}
                                 onChange={(e) =>
                                   setTermConditionLink(e.target.value)
                                 }

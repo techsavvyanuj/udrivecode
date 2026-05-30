@@ -27,9 +27,6 @@ import Loader from '../Pages/Loader';
 import UserHistory from '../Pages/UserHistory';
 import PremiumPlan from '../Component/Table/PremiumPlan';
 import PurchasePremiumPlanTable from '../Component/Table/purchasePremiumPlanHistory';
-import ContactUs from '../Pages/ContactUs';
-import Faq from '../Pages/Faq';
-import Content from '../Pages/Content';
 import Setting from '../Pages/Setting';
 import AdminInfo from './AdminInfo';
 import Advertisement from './Advertisement';
@@ -43,11 +40,8 @@ import WebSeriesDetail from '../Component/Dialog/WebSeriesDetail';
 import SeriesManual from '../Component/Dialog/SeriesManual';
 import LiveTvDialogue from '../Component/Dialog/LiveTvDialogue';
 import { useSelector } from 'react-redux';
-import UserRaisedTicket from '../Component/Table/UserRaisedTicket';
 import MovieEpisode from '../Component/DetailsPage/MovieEpisode';
-import Shorts from './Shorts';
 import WebSeriesEpisode from '../Component/DetailsPage/WebSeriesEpisode';
-import ContentForm from '../Component/Dialog/ContentForm';
 
 const Admin = () => {
   const location = useRouteMatch();
@@ -80,11 +74,6 @@ const Admin = () => {
           <Route exact path={`${location.path}/user`} component={User} />
           <Route
             exact
-            path={`${location.path}/raisedTicket`}
-            component={UserRaisedTicket}
-          />
-          <Route
-            exact
             path={`${location.path}/user/history`}
             component={UserHistory}
           />
@@ -95,12 +84,6 @@ const Admin = () => {
             path={`${location.path}/web_series`}
             component={TvSeries}
           />
-          <Route
-            exact
-            path={`${location.path}/shortVideo`}
-            component={Shorts}
-          />
-
           <Route
             exact
             path={`${location.path}/web_series/webSeriesDetail`}
@@ -227,23 +210,6 @@ const Admin = () => {
             exact
             path={`${location.path}/profile/admin_info`}
             component={Profile}
-          />
-
-          <Route
-            exact
-            path={`${location.path}/help_center/faq`}
-            component={Faq}
-          />
-          <Route exact path={`${location.path}/content`} component={Content} />
-          <Route
-            exact
-            path={`${location.path}/content/content_form`}
-            component={ContentForm}
-          />
-          <Route
-            exact
-            path={`${location.path}/help_center/contact_us`}
-            component={ContactUs}
           />
           <Route exact path={`${location.path}/setting`} component={Setting} />
         </Switch>
